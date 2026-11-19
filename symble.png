@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>행운의 로또 6/45 추첨기</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #121212;
+            color: #ffffff;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        h1 {
+            font-size: 22px;
+            margin: 0 0 5px 0;
+            text-align: center;
+            color: #fbc400;
+        }
+        
+        .subtitle {
+            font-size: 13px;
+            color: #9ca3af;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        /* 심볼 이미지 액자 */
+        .symbol-box {
+            position: relative;
+            width: 100%;
+            max-width: 400px;
+            margin-bottom: 25px;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.6);
+            border: 2px solid #d4af37;
+            background-color: #1a1a1a;
+            min-height: 220px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .symbol-img {
+            width: 100%;
+            height: auto;
+            display: block;
+            object-fit: cover;
+        }
+
+        /* 심볼 중앙에 겹쳐 띄우는 로또 번호 영역 */
+        .overlay-balls {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 6px;
+            background: rgba(0, 0, 0, 0.78);
+            padding: 12px 14px;
+            border-radius: 24px;
+            border: 1px solid rgba(251, 196, 0, 0.5);
+            width: 88%;
+            min-height: 46px;
+            box-sizing: border-box;
+            flex-wrap: nowrap;
+        }
+
+        .placeholder-text {
+            font-size: 13px;
+            color: #fde047;
+            font-weight: bold;
+        }
+
+        /* 로또 공 디자인 */
+        .ball {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 16px;
+            font-weight: bold;
+            color: white;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.6);
+            box-shadow: inset -4px -4px 10px rgba(0,0,0,0.4), 0 3px 5px rgba(0,0,0,0.4);
+            opacity: 0;
+            transform: scale(0.5);
+            animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            flex-shrink: 0;
+        }
+
+        @keyframes popIn {
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        /* 한국 로또 공식 색상 */
+        .color-yellow { background: radial-gradient(circle at 12px 12px, #fde047, #eab308); color: #333; text-shadow: none; }
+        .color-blue { background: radial-gradient(circle at 12px 12px, #7dd3fc, #0ea5e9); }
+        .color-red { background: radial-gradient(circle at 12px 12px, #fca5a5, #ef4444); }
+        .color-gray { background: radial-gradient(circle at 12px 12px, #d1d5db, #6b7280); }
+        .color-green { background: radial-gradient(circle at 12px 12px, #bef264, #84cc16); }
+
+        /* 추첨 버튼 */
+        .draw-btn {
+            background: linear-gradient(135deg, #eab308, #ca8a04);
+            color: #111;
+            border: none;
+            border-radius: 30px;
+            padding: 16px 32px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(234, 179, 8, 0.4);
+            transition: transform 0.1s, opacity 0.2s;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .draw-btn:active {
+            transform: scale(0.96);
+        }
+
+        .draw-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        /* 추첨 기록 영역 */
+        .history-section {
+            margin-top: 30px;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .history-title {
+            font-size: 15px;
+            color: #9ca3af;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #374151;
+            padding-bottom: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .clear-btn {
+            font-size: 12px;
+            color: #ef4444;
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 0;
+        }
+
+        .history-item {
+            background-color: #1f2937;
+            padding: 12px;
+            border-radius: 10px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 14px;
+            color: #e5e7eb;
+        }
+
+        .history-time {
+            font-size: 12px;
+            color: #9ca3af;
+        }
+
+        .history-nums {
+            letter-spacing: 1px;
+            font-weight: bold;
+            flex-grow: 1;
+            text-align: center;
+        }
+
+        .copy-btn {
+            background-color: #4b5563;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 6px 10px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .copy-btn:active {
+            background-color: #374151;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>행운의 로또 6/45 추첨기</h1>
+    <div class="subtitle">역대 최다 출현 가중치 · 자동 저장 지원</div>
+
+    <!-- 심볼 배경 + 중앙 번호 오버레이 -->
+    <div class="symbol-box">
+        <img src="symbol.png" alt="행운의 심볼" class="symbol-img" onerror="this.style.display='none'">
+        <div class="overlay-balls" id="ballContainer">
+            <span class="placeholder-text">아래 버튼을 눌러 번호를 뽑으세요</span>
+        </div>
+    </div>
+
+    <button class="draw-btn" id="drawBtn" onclick="generateLotto()">고확률 행운 번호 뽑기</button>
+
+    <div class="history-section">
+        <div class="history-title">
+            <span>최근 추첨 기록 (자동 저장)</span>
+            <button class="clear-btn" onclick="clearHistory()">기록 삭제</button>
+        </div>
+        <div id="historyList"></div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', loadHistory);
+
+        function getBallColor(number) {
+            if (number <= 10) return 'color-yellow';
+            if (number <= 20) return 'color-blue';
+            if (number <= 30) return 'color-red';
+            if (number <= 40) return 'color-gray';
+            return 'color-green';
+        }
+
+        // 역대 최다 출현 번호 가중치
+        const frequencyWeights = {
+            43: 5, 34: 5, 1: 5, 27: 5, 13: 5, 17: 5, 39: 5, 33: 5, 40: 5, 14: 5,
+            20: 3, 18: 3, 10: 3, 4: 3, 2: 3, 45: 3, 12: 3, 19: 3, 21: 3, 38: 3
+        };
+
+        function generateLotto() {
+            const btn = document.getElementById('drawBtn');
+            const container = document.getElementById('ballContainer');
+            
+            btn.disabled = true;
+            container.innerHTML = '';
+
+            let probabilityPool = [];
+            for (let i = 1; i <= 45; i++) {
+                let weight = frequencyWeights[i] || 1;
+                for (let w = 0; w < weight; w++) {
+                    probabilityPool.push(i);
+                }
+            }
+
+            let selectedNumbers = [];
+            while (selectedNumbers.length < 6) {
+                let randomIndex = Math.floor(Math.random() * probabilityPool.length);
+                let pickedNum = probabilityPool[randomIndex];
+                if (!selectedNumbers.includes(pickedNum)) {
+                    selectedNumbers.push(pickedNum);
+                }
+            }
+
+            selectedNumbers.sort((a, b) => a - b);
+
+            selectedNumbers.forEach((num, index) => {
+                setTimeout(() => {
+                    const ball = document.createElement('div');
+                    ball.className = `ball ${getBallColor(num)}`;
+                    ball.textContent = num;
+                    container.appendChild(ball);
+
+                    if (index === 5) {
+                        saveHistory(selectedNumbers);
+                        btn.disabled = false;
+                    }
+                }, index * 250);
+            });
+        }
+
+        function saveHistory(numbers) {
+            const timeString = new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
+            let savedHistory = JSON.parse(localStorage.getItem('lottoHistory')) || [];
+            
+            savedHistory.unshift({ numbers: numbers, time: timeString });
+            if (savedHistory.length > 5) {
+                savedHistory = savedHistory.slice(0, 5);
+            }
+            
+            localStorage.setItem('lottoHistory', JSON.stringify(savedHistory));
+            loadHistory();
+        }
+
+        function loadHistory() {
+            const historyList = document.getElementById('historyList');
+            historyList.innerHTML = '';
+            
+            let savedHistory = JSON.parse(localStorage.getItem('lottoHistory')) || [];
+            
+            savedHistory.forEach(item => {
+                const historyItem = document.createElement('div');
+                historyItem.className = 'history-item';
+                const numsText = item.numbers.join(', ');
+                
+                historyItem.innerHTML = `
+                    <span class="history-time">${item.time}</span>
+                    <span class="history-nums">${numsText}</span>
+                    <button class="copy-btn" onclick="copyToClipboard('${numsText}')">복사</button>
+                `;
+                historyList.appendChild(historyItem);
+            });
+        }
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert('번호가 복사되었습니다!\n메모장이나 카카오톡에 붙여넣기 하세요.\n\n' + text);
+            }).catch(() => {
+                alert('복사에 실패했습니다. 번호를 직접 선택해 복사해 주세요.');
+            });
+        }
+
+        function clearHistory() {
+            if (confirm('저장된 추첨 기록을 모두 지우시겠습니까?')) {
+                localStorage.removeItem('lottoHistory');
+                loadHistory();
+            }
+        }
+    </script>
+</body>
+</html>
